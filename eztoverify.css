@@ -1,4 +1,4 @@
-#qv-overlay {
+#ez-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -8,11 +8,11 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-#qv-popup-message{
+#ez-popup-message{
     color: black;
 }
 
-#qv-popup {
+#ez-popup {
     display: none;
     position: fixed;
     top: 50%;
@@ -24,7 +24,7 @@
     z-index: 1;
 }
 
-#qv-popup-iframe {
+#ez-popup-iframe {
     width: 100%;
     height: 100%;
 }

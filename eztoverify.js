@@ -1,33 +1,33 @@
-function QlikVerify() {
+function eztoverify() {
 }
 
 const appendTags = (url,opts) => {
     if (opts.showStatus) {
-        if (!document.getElementById("qv-overlay")) {
+        if (!document.getElementById("ez-overlay")) {
             // Create a new <div> element
             var newDiv = document.createElement("div");
 
             // Set some attributes for the div (optional)
-            newDiv.id = "qv-overlay";
+            newDiv.id = "ez-overlay";
 
             // Append the new <div> element to the <body> tag
             document.body.appendChild(newDiv);
         }
 
-        if (!document.getElementById("qv-popup")) {
+        if (!document.getElementById("ez-popup")) {
             // Create a new <div> element
             var newDiv = document.createElement("div");
 
             // Set some attributes for the div (optional)
-            newDiv.id = "qv-popup";
+            newDiv.id = "ez-popup";
             newDiv.innerHTML = '<p>Complete the authentication triggered in next<p>';
 
             // Append the new <div> element to the <body> tag
             document.body.appendChild(newDiv);
         }
 
-        const overlay = document.getElementById("qv-overlay");
-        const popup = document.getElementById("qv-popup");
+        const overlay = document.getElementById("ez-overlay");
+        const popup = document.getElementById("ez-popup");
         overlay.style.display = "block";
         popup.style.display = "block";
         overlay.addEventListener("click", function () {
@@ -81,8 +81,8 @@ const listen = (chatcode, pollUrl, newWin, opts, callback) => {
     socket.auth = { chatcode };
     socket.connect();
     socket.on(chatcode, function (event) {
-        const overlay = document.getElementById("qv-overlay");
-        const popup = document.getElementById("qv-popup");
+        const overlay = document.getElementById("ez-overlay");
+        const popup = document.getElementById("ez-popup");
         if (overlay && popup) {
             overlay.remove();
             popup.remove();
@@ -97,7 +97,7 @@ const listen = (chatcode, pollUrl, newWin, opts, callback) => {
     });
 }
 
-QlikVerify.prototype.request = function (metadata, cnfg, callback) {
+eztoverify.prototype.request = function (metadata, cnfg, callback) {
     var trxRequest = {
         "metadata": metadata
     }
