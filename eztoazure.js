@@ -119,9 +119,9 @@ function initRegistration() {
         function(res) {
             console.log(res);
             try {
-                if (res && res.authReqId) {
+                if (res && res.auth_req_id) {
                     console.log('Verification was successful.');
-                    authdata.value = res.authReqId
+                    authdata.value = res.auth_req_id
                     console.log("AUTH_REQ_ID: " + authdata.value);
                     $('#continue').click();
                     $loginTitle.text('Verification Successful');
