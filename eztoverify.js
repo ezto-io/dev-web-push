@@ -19,10 +19,12 @@ function bufferToBase64url(buffer) {
   return base64urlString;
 }
 
-const appendModal = (url, opts) => {
+const appendModal = (url, opts, callback) => {
   let lurl = new URL(opts.api);
   // Create a div element
   var div = document.createElement("div");
+
+  div.setAttribute('id','ezto')
 
   // Set the inner HTML of the div to your HTML snippet
   div.innerHTML =
@@ -43,18 +45,18 @@ const appendModal = (url, opts) => {
   // Append the div to the body
   document.body.appendChild(div);
   var modal = document.getElementById("ez-modal");
-
+  var eztoDiv = document.getElementById('ezto');
   // Get the <span> element that closes the modal
   var span = document.getElementsByClassName("ez-close")[0];
   span.onclick = function () {
     modal.style.display = "none";
-  };
-
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
+    eztoDiv.style.display = "none";
+    document.getElementById('ez-iframe').src = "";
+    callback({
+      type: "register",
+      success: false,
+      reason: `Transaction Failed: User aborted the process`,
+    });
   };
 };
 
@@ -76,15 +78,25 @@ const showStatus = () => {
 
     // Set some attributes for the div (optional)
     newDiv.id = "ez-popup";
-    newDiv.innerHTML = "<p>Complete the authentication triggered in next<p>";
+    
+    // Creating loader div
+    const loaderContainer = document.createElement('div');
+    const loader = document.createElement('div');
 
+    loaderContainer.id = 'loaderContainer';
+    loader.id = 'loader';
+
+    loaderContainer.appendChild(loader);
+    newDiv.appendChild(loaderContainer);
+    
+    const overlay = document.getElementById('ez-overlay');
     // Append the new <div> element to the <body> tag
-    document.body.appendChild(newDiv);
+    overlay.appendChild(newDiv);
   }
 
   const overlay = document.getElementById("ez-overlay");
   const popup = document.getElementById("ez-popup");
-  overlay.style.display = "block";
+  overlay.style.display = "flex";
   popup.style.display = "block";
 };
 
@@ -95,10 +107,11 @@ const hideStatus = () => {
   popup.style.display = "none";
 };
 
-const showModal = (url, opts) => {
-  if (!document.getElementById("ez-modal")) {
-    appendModal(url, opts);
+const showModal = (url, opts, callback) => {
+  if (!document.getElementById("ezto")) {
+    appendModal(url, opts, callback);
   } else {
+    document.getElementById("ezto").style.display = "flex";
     document.getElementById("ez-iframe").src = url; // Set the URL here
   }
   var modal = document.getElementById("ez-modal");
@@ -223,7 +236,7 @@ const request = async (data, opts, callback) => {
       if (opts.debug) {
         console.log(res);
       }
-      showModal(res.url, opts);
+      showModal(res.url, opts, callback);
       listen(res.trxId, res.pollUrl, opts, callback);
     }
   } catch (error) {
@@ -237,7 +250,10 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.connect();
   socket.on(chatcode, function (event) {
     var modal = document.getElementById("ez-modal");
+    var eztoDiv = document.getElementById('ezto');
     modal.style.display = "none";
+    eztoDiv.style.display = "none";
+    document.getElementById('ez-iframe').src = "";
     callback(event);
   });
   socket.on("connect", function () {
