@@ -1,4 +1,4 @@
-function eztoverify() {}
+function eztoverify() { }
 
 function bufferToBase64url(buffer) {
   const byteView = new Uint8Array(buffer);
@@ -22,9 +22,9 @@ function bufferToBase64url(buffer) {
 const appendModal = (url, opts, callback) => {
   let lurl = new URL(opts.api);
   // Create a div element
-  var div = document.createElement("div");
+  let div = document.createElement("div");
 
-  div.setAttribute('id','ezto')
+  div.setAttribute('id', 'ezto')
 
   // Set the inner HTML of the div to your HTML snippet
   div.innerHTML =
@@ -44,10 +44,10 @@ const appendModal = (url, opts, callback) => {
 
   // Append the div to the body
   document.body.appendChild(div);
-  var modal = document.getElementById("ez-modal");
-  var eztoDiv = document.getElementById('ezto');
+  let modal = document.getElementById("ez-modal");
+  let eztoDiv = document.getElementById('ezto');
   // Get the <span> element that closes the modal
-  var span = document.getElementsByClassName("ez-close")[0];
+  let span = document.getElementsByClassName("ez-close")[0];
   span.onclick = function () {
     modal.style.display = "none";
     eztoDiv.style.display = "none";
@@ -63,7 +63,7 @@ const appendModal = (url, opts, callback) => {
 const showStatus = () => {
   if (!document.getElementById("ez-overlay")) {
     // Create a new <div> element
-    var newDiv = document.createElement("div");
+    let newDiv = document.createElement("div");
 
     // Set some attributes for the div (optional)
     newDiv.id = "ez-overlay";
@@ -74,11 +74,11 @@ const showStatus = () => {
 
   if (!document.getElementById("ez-popup")) {
     // Create a new <div> element
-    var newDiv = document.createElement("div");
+    let newDiv = document.createElement("div");
 
     // Set some attributes for the div (optional)
     newDiv.id = "ez-popup";
-    
+
     // Creating loader div
     const loaderContainer = document.createElement('div');
     const loader = document.createElement('div');
@@ -88,7 +88,7 @@ const showStatus = () => {
 
     loaderContainer.appendChild(loader);
     newDiv.appendChild(loaderContainer);
-    
+
     const overlay = document.getElementById('ez-overlay');
     // Append the new <div> element to the <body> tag
     overlay.appendChild(newDiv);
@@ -114,7 +114,7 @@ const showModal = (url, opts, callback) => {
     document.getElementById("ezto").style.display = "flex";
     document.getElementById("ez-iframe").src = url; // Set the URL here
   }
-  var modal = document.getElementById("ez-modal");
+  let modal = document.getElementById("ez-modal");
   modal.style.display = "block";
 };
 
@@ -123,11 +123,13 @@ const registerListener = (url) => {
   window.addEventListener(
     "message",
     function (event) {
-      var modal = document.getElementById("ez-iframe");
+      let modal = document.getElementById("ez-iframe");
       if (event.origin === lurl.origin) {
         switch (event.data.action) {
           case "fido":
             fido(modal, event);
+            break;
+          default:
             break;
         }
       }
@@ -137,13 +139,13 @@ const registerListener = (url) => {
 
   function fido(modal, event) {
     if (!window.PublicKeyCredential) {
-      var message = {
+      let message = {
         success: false,
         err: "webauthn-unsupported-browser-text",
       };
       modal.contentWindow.postMessage(message, lurl.origin);
     } else {
-      var pubKey = { publicKey: event.data.publicKey };
+      let pubKey = { publicKey: event.data.publicKey };
       if (event.data.type === "create") {
         navigator.credentials
           .create(pubKey)
@@ -162,14 +164,14 @@ const registerListener = (url) => {
               },
               type: result.type,
             };
-            var message = {
+            let message = {
               success: true,
               result: serializeable,
             };
             modal.contentWindow.postMessage(message, lurl.origin);
           })
           .catch((err) => {
-            var message = {
+            let message = {
               success: false,
               err: err,
             };
@@ -184,23 +186,26 @@ const registerListener = (url) => {
               id: result.id,
               rawId: bufferToBase64url(result.rawId),
               response: {
-                attestationObject: bufferToBase64url(
-                  result.response.attestationObject
+                authenticatorData: bufferToBase64url(
+                  result.response.authenticatorData
                 ),
                 clientDataJSON: bufferToBase64url(
                   result.response.clientDataJSON
                 ),
+                signature: bufferToBase64url(
+                  result.response.signature
+                )
               },
               type: result.type,
             };
-            var message = {
+            let message = {
               success: true,
               result: serializeable,
             };
             modal.contentWindow.postMessage(message, lurl.origin);
           })
           .catch((err) => {
-            var message = {
+            let message = {
               success: false,
               err: err,
             };
@@ -249,8 +254,8 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.auth = { chatcode };
   socket.connect();
   socket.on(chatcode, function (event) {
-    var modal = document.getElementById("ez-modal");
-    var eztoDiv = document.getElementById('ezto');
+    let modal = document.getElementById("ez-modal");
+    let eztoDiv = document.getElementById('ezto');
     modal.style.display = "none";
     eztoDiv.style.display = "none";
     document.getElementById('ez-iframe').src = "";
@@ -265,7 +270,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
 
 eztoverify.prototype.request = function (metadata, cnfg, callback) {
   showStatus();
-  var trxRequest = {
+  let trxRequest = {
     metadata: metadata,
   };
   request(trxRequest, cnfg, callback);
