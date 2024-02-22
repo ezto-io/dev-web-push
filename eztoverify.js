@@ -146,7 +146,7 @@ const registerListener = (url) => {
         }
       }
     },
-    false
+    {once: true}
   );
 
   function fido(modal, event) {
