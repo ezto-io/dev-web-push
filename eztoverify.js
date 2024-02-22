@@ -32,6 +32,11 @@ const appendModal = (url, opts, callback) => {
     <div id="ez-modal" class="modal">
     <div class="ez-modal-content">
         <span class="ez-close">&times;</span>
+        <div id="frameLoader" class="loaderContainer">
+          <div class="loader">
+
+          </div>
+        </div>
         <iframe id="ez-iframe" allow="camera 'src' ` +
     lurl.origin +
     `; microphone 'src' ` +
@@ -45,13 +50,14 @@ const appendModal = (url, opts, callback) => {
   // Append the div to the body
   document.body.appendChild(div);
   let modal = document.getElementById("ez-modal");
-  let eztoDiv = document.getElementById('ezto');
+  let ezIframe = document.getElementById('ez-iframe');
   // Get the <span> element that closes the modal
   let span = document.getElementsByClassName("ez-close")[0];
   span.onclick = function () {
     modal.style.display = "none";
-    eztoDiv.style.display = "none";
-    document.getElementById('ez-iframe').src = "";
+    document.getElementById('ezto').style.display = "none";
+    document.getElementById("ez-overlay").style.display = "none";
+    ezIframe.src = "";
     callback({
       type: "register",
       success: false,
@@ -83,8 +89,8 @@ const showStatus = () => {
     const loaderContainer = document.createElement('div');
     const loader = document.createElement('div');
 
-    loaderContainer.id = 'loaderContainer';
-    loader.id = 'loader';
+    loaderContainer.classList.add('loaderContainer')
+    loader.classList.add('loader');
 
     loaderContainer.appendChild(loader);
     newDiv.appendChild(loaderContainer);
@@ -101,21 +107,27 @@ const showStatus = () => {
 };
 
 const hideStatus = () => {
-  const overlay = document.getElementById("ez-overlay");
   const popup = document.getElementById("ez-popup");
-  overlay.style.display = "none";
   popup.style.display = "none";
 };
 
 const showModal = (url, opts, callback) => {
-  if (!document.getElementById("ezto")) {
+  if (!document.getElementById("ez-modal")) {
     appendModal(url, opts, callback);
   } else {
-    document.getElementById("ezto").style.display = "flex";
+    document.getElementById("ez-modal").style.display = "flex";
+    document.getElementById('ezto').style.display = "flex";
     document.getElementById("ez-iframe").src = url; // Set the URL here
+    document.getElementById('frameLoader').style.display = "flex";
   }
-  let modal = document.getElementById("ez-modal");
-  modal.style.display = "block";
+  const ezIframe = document.getElementById('ez-iframe');
+  ezIframe.onload = function(){
+    hideStatus();
+    document.getElementById('frameLoader').style.display = "none";
+    document.getElementById('ez-iframe').style.display = "block";
+    document.getElementById('ez-modal').style.display = "flex";
+  }
+
 };
 
 const registerListener = (url) => {
@@ -228,7 +240,6 @@ const request = async (data, opts, callback) => {
   try {
     // Make the fetch request and wait for the response
     const response = await fetch(opts.api, requestOptions);
-    hideStatus();
     // Check if the request was successful (status code 2xx)
     if (!response.ok) {
       callback({
@@ -258,6 +269,8 @@ const listen = (chatcode, pollUrl, opts, callback) => {
     let eztoDiv = document.getElementById('ezto');
     modal.style.display = "none";
     eztoDiv.style.display = "none";
+    document.getElementById('ez-overlay').style.display = "none";
+    hideStatus();
     document.getElementById('ez-iframe').src = "";
     callback(event);
   });
