@@ -265,14 +265,16 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.auth = { chatcode };
   socket.connect();
   socket.on(chatcode, function (event) {
-    let modal = document.getElementById("ez-modal");
-    let eztoDiv = document.getElementById('ezto');
-    modal.style.display = "none";
-    eztoDiv.style.display = "none";
-    document.getElementById('ez-overlay').style.display = "none";
-    hideStatus();
-    document.getElementById('ez-iframe').src = "";
-    callback(event);
+    setTimeout(() => {
+      let modal = document.getElementById("ez-modal");
+      let eztoDiv = document.getElementById('ezto');
+      modal.style.display = "none";
+      eztoDiv.style.display = "none";
+      document.getElementById('ez-overlay').style.display = "none";
+      hideStatus();
+      document.getElementById('ez-iframe').src = "";
+      callback(event);
+    }, 1500);
   });
   socket.on("connect", function () {
     if (opts.debug) {
