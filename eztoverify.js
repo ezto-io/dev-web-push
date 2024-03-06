@@ -48,7 +48,7 @@ const appendModal = (url, opts, callback) => {
     </div>`;
 
   // Append the div to the body
-  document.body.appendChild(div);
+  document.getElementById('ez-overlay').appendChild(div);
   let modal = document.getElementById("ez-modal");
   let ezIframe = document.getElementById('ez-iframe');
   // Get the <span> element that closes the modal
@@ -112,6 +112,7 @@ const hideStatus = () => {
 };
 
 const showModal = (url, opts, callback) => {
+  hideStatus();
   if (!document.getElementById("ez-modal")) {
     appendModal(url, opts, callback);
   } else {
@@ -122,7 +123,6 @@ const showModal = (url, opts, callback) => {
   }
   const ezIframe = document.getElementById('ez-iframe');
   ezIframe.onload = function(){
-    hideStatus();
     document.getElementById('frameLoader').style.display = "none";
     document.getElementById('ez-iframe').style.display = "block";
     document.getElementById('ez-modal').style.display = "flex";
@@ -265,7 +265,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.auth = { chatcode };
   socket.connect();
   socket.on(chatcode, function (event) {
-    setTimeout(() => {
+    setTimeout(()=>{
       let modal = document.getElementById("ez-modal");
       let eztoDiv = document.getElementById('ezto');
       modal.style.display = "none";
@@ -274,7 +274,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
       hideStatus();
       document.getElementById('ez-iframe').src = "";
       callback(event);
-    }, 1500);
+    },1500)
   });
   socket.on("connect", function () {
     if (opts.debug) {
