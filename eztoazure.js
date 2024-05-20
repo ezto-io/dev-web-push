@@ -113,7 +113,8 @@ function initRegistration() {
             })
         },
         {
-            api:ezto_verify_url, 
+            api:ezto_verify_url,
+            apiVersion: "1",
             debug: true
         },
         function(res) {
