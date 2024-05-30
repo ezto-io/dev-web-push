@@ -37,7 +37,9 @@ const appendModal = (url, opts, callback) => {
 
           </div>
         </div>
-        <iframe id="ez-iframe" allow="camera 'src' ` +
+        <iframe id="ez-iframe"  allow="camera 'src'  ` +
+    lurl.origin +
+    `; geolocation 'src' ` +
     lurl.origin +
     `; microphone 'src' ` +
     lurl.origin +
