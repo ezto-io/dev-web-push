@@ -232,11 +232,12 @@ const registerListener = (url) => {
 
 const request = async (data, opts, callback) => {
   registerListener(opts.api);
+  let supportedVersions = ['0','1'];
   const requestOptions = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Api-Version": opts.apiVersion != undefined ? opts.apiVersion : 0
+      "Api-Version": opts.apiVersion != undefined && supportedVersions.includes(opts.apiVersion) ? opts.apiVersion : 0
     },
     body: JSON.stringify(data), // Convert the data to JSON format
   };
