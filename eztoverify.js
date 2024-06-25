@@ -113,6 +113,15 @@ const hideStatus = () => {
   popup.style.display = "none";
 };
 
+const hideLoader = () => {
+  setTimeout(() => {
+    const overlay = document.getElementById("ez-overlay");
+    const popup = document.getElementById("ez-popup");
+    if (overlay) overlay.style.display = "none";
+    if (popup) popup.style.display = "none";
+  }, 500);
+};
+
 const showModal = (url, opts, callback) => {
   hideStatus();
   if (!document.getElementById("ez-modal")) {
@@ -251,6 +260,7 @@ const request = async (data, opts, callback) => {
         success: false,
         reason: `Register Failed: ${response.status}`,
       });
+      hideLoader();
     } else {
       let res = await response.json();
       if (opts.debug) {
