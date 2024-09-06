@@ -31,7 +31,7 @@ const appendModal = (url, opts, callback) => {
     `
     <div id="ez-modal" class="modal">
     <div class="ez-modal-content">
-        <span class="ez-close">&times;</span>
+        <span id="ez-close" class="ez-close">&times;</span>
         <div id="frameLoader" class="loaderContainer">
           <div class="loader">
 
@@ -51,6 +51,9 @@ const appendModal = (url, opts, callback) => {
 
   // Append the div to the body
   document.getElementById('ez-overlay').appendChild(div);
+  if (isWebview()) {
+    document.getElementById("ez-close").style.display = "none";
+  }
   let modal = document.getElementById("ez-modal");
   let ezIframe = document.getElementById('ez-iframe');
   // Get the <span> element that closes the modal
@@ -133,7 +136,7 @@ const showModal = (url, opts, callback) => {
     document.getElementById('frameLoader').style.display = "flex";
   }
   const ezIframe = document.getElementById('ez-iframe');
-  ezIframe.onload = function(){
+  ezIframe.onload = function () {
     document.getElementById('frameLoader').style.display = "none";
     document.getElementById('ez-iframe').style.display = "block";
     document.getElementById('ez-modal').style.display = "flex";
@@ -157,7 +160,7 @@ const registerListener = (url) => {
         }
       }
     },
-    {once: true}
+    { once: true }
   );
 
   function fido(modal, event) {
@@ -241,7 +244,7 @@ const registerListener = (url) => {
 
 const request = async (data, opts, callback) => {
   registerListener(opts.api);
-  let supportedVersions = ['0','1'];
+  let supportedVersions = ['0', '1'];
   const requestOptions = {
     method: "POST",
     headers: {
@@ -279,7 +282,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.auth = { chatcode };
   socket.connect();
   socket.on(chatcode, function (event) {
-    setTimeout(()=>{
+    setTimeout(() => {
       let modal = document.getElementById("ez-modal");
       let eztoDiv = document.getElementById('ezto');
       modal.style.display = "none";
@@ -288,7 +291,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
       hideStatus();
       document.getElementById('ez-iframe').src = "";
       callback(event);
-    },1500)
+    }, 1500)
   });
   socket.on("connect", function () {
     if (opts.debug) {
@@ -304,3 +307,15 @@ eztoverify.prototype.request = function (metadata, cnfg, callback) {
   };
   request(trxRequest, cnfg, callback);
 };
+
+
+const isWebview = () => {
+  if ((typeof window.flutter_inappwebview) != "undefined"
+    || (typeof window.ReactNativeWebView) != "undefined"
+    || (typeof window.webkit) != "undefined"
+    || (((typeof AndroidInterface) != "undefined") && (typeof AndroidInterface.messageHandlers) != "undefined")
+    || (typeof window != "undefined" && typeof window.chrome != "undefined" && typeof window.chrome.webview != "undefined")) {
+    return true;
+  }
+  return false;
+}

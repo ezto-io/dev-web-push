@@ -28,7 +28,6 @@
   box-sizing: border-box;
   background-color: #fefefe;
   margin: auto;
-  border: 1px solid #888;
   border-radius: 24px;
   width: var(--modal-width);
   height: 695px;
