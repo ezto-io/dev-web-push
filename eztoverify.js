@@ -186,7 +186,7 @@ const registerListener = (url) => {
         }
       }
     },
-    { once: true },
+    { once: true }
   );
 
   function fido(modal, event) {
@@ -208,10 +208,10 @@ const registerListener = (url) => {
               rawId: bufferToBase64url(result.rawId),
               response: {
                 attestationObject: bufferToBase64url(
-                  result.response.attestationObject,
+                  result.response.attestationObject
                 ),
                 clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON,
+                  result.response.clientDataJSON
                 ),
               },
               type: result.type,
@@ -239,10 +239,10 @@ const registerListener = (url) => {
               rawId: bufferToBase64url(result.rawId),
               response: {
                 authenticatorData: bufferToBase64url(
-                  result.response.authenticatorData,
+                  result.response.authenticatorData
                 ),
                 clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON,
+                  result.response.clientDataJSON
                 ),
                 signature: bufferToBase64url(result.response.signature),
               },
@@ -376,7 +376,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
         document.getElementById("ez-overlay").style.display = "none";
         callback(event);
       }
-    }, 1500);
+    }, 3500);
   });
   socket.on("connect", function () {
     if (opts.debug) {
