@@ -1,4 +1,4 @@
-function eztoverify() { }
+function eztoverify() {}
 
 function bufferToBase64url(buffer) {
   const byteView = new Uint8Array(buffer);
@@ -24,7 +24,7 @@ const appendModal = (url, opts, callback) => {
   // Create a div element
   let div = document.createElement("div");
 
-  div.setAttribute('id', 'ezto')
+  div.setAttribute("id", "ezto");
 
   // Set the inner HTML of the div to your HTML snippet
   div.innerHTML =
@@ -50,17 +50,17 @@ const appendModal = (url, opts, callback) => {
     </div>`;
 
   // Append the div to the body
-  document.getElementById('ez-overlay').appendChild(div);
+  document.getElementById("ez-overlay").appendChild(div);
   if (isWebview()) {
     document.getElementById("ez-close").style.display = "none";
   }
   let modal = document.getElementById("ez-modal");
-  let ezIframe = document.getElementById('ez-iframe');
+  let ezIframe = document.getElementById("ez-iframe");
   // Get the <span> element that closes the modal
   let span = document.getElementsByClassName("ez-close")[0];
   span.onclick = function () {
     modal.style.display = "none";
-    document.getElementById('ezto').style.display = "none";
+    document.getElementById("ezto").style.display = "none";
     document.getElementById("ez-overlay").style.display = "none";
     ezIframe.src = "";
     callback({
@@ -91,16 +91,16 @@ const showStatus = () => {
     newDiv.id = "ez-popup";
 
     // Creating loader div
-    const loaderContainer = document.createElement('div');
-    const loader = document.createElement('div');
+    const loaderContainer = document.createElement("div");
+    const loader = document.createElement("div");
 
-    loaderContainer.classList.add('loaderContainer')
-    loader.classList.add('loader');
+    loaderContainer.classList.add("loaderContainer");
+    loader.classList.add("loader");
 
     loaderContainer.appendChild(loader);
     newDiv.appendChild(loaderContainer);
 
-    const overlay = document.getElementById('ez-overlay');
+    const overlay = document.getElementById("ez-overlay");
     // Append the new <div> element to the <body> tag
     overlay.appendChild(newDiv);
   }
@@ -131,17 +131,16 @@ const showModal = (url, opts, callback) => {
     appendModal(url, opts, callback);
   } else {
     document.getElementById("ez-modal").style.display = "flex";
-    document.getElementById('ezto').style.display = "flex";
+    document.getElementById("ezto").style.display = "flex";
     document.getElementById("ez-iframe").src = url; // Set the URL here
-    document.getElementById('frameLoader').style.display = "flex";
+    document.getElementById("frameLoader").style.display = "flex";
   }
-  const ezIframe = document.getElementById('ez-iframe');
+  const ezIframe = document.getElementById("ez-iframe");
   ezIframe.onload = function () {
-    document.getElementById('frameLoader').style.display = "none";
-    document.getElementById('ez-iframe').style.display = "block";
-    document.getElementById('ez-modal').style.display = "flex";
-  }
-
+    document.getElementById("frameLoader").style.display = "none";
+    document.getElementById("ez-iframe").style.display = "block";
+    document.getElementById("ez-modal").style.display = "flex";
+  };
 };
 
 const registerListener = (url) => {
@@ -218,9 +217,7 @@ const registerListener = (url) => {
                 clientDataJSON: bufferToBase64url(
                   result.response.clientDataJSON
                 ),
-                signature: bufferToBase64url(
-                  result.response.signature
-                )
+                signature: bufferToBase64url(result.response.signature),
               },
               type: result.type,
             };
@@ -244,12 +241,16 @@ const registerListener = (url) => {
 
 const request = async (data, opts, callback) => {
   registerListener(opts.api);
-  let supportedVersions = ['0', '1'];
+  let supportedVersions = ["0", "1"];
   const requestOptions = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Api-Version": opts.apiVersion != undefined && supportedVersions.includes(opts.apiVersion) ? opts.apiVersion : 0
+      "Api-Version":
+        opts.apiVersion != undefined &&
+        supportedVersions.includes(opts.apiVersion)
+          ? opts.apiVersion
+          : 0,
     },
     body: JSON.stringify(data), // Convert the data to JSON format
   };
@@ -284,14 +285,14 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.on(chatcode, function (event) {
     setTimeout(() => {
       let modal = document.getElementById("ez-modal");
-      let eztoDiv = document.getElementById('ezto');
+      let eztoDiv = document.getElementById("ezto");
       modal.style.display = "none";
       eztoDiv.style.display = "none";
-      document.getElementById('ez-overlay').style.display = "none";
+      document.getElementById("ez-overlay").style.display = "none";
       hideStatus();
-      document.getElementById('ez-iframe').src = "";
+      document.getElementById("ez-iframe").src = "";
       callback(event);
-    }, 1500)
+    }, 3500);
   });
   socket.on("connect", function () {
     if (opts.debug) {
@@ -308,14 +309,18 @@ eztoverify.prototype.request = function (metadata, cnfg, callback) {
   request(trxRequest, cnfg, callback);
 };
 
-
 const isWebview = () => {
-  if ((typeof window.flutter_inappwebview) != "undefined"
-    || (typeof window.ReactNativeWebView) != "undefined"
-    || (typeof window.webkit) != "undefined"
-    || (((typeof AndroidInterface) != "undefined") && (typeof AndroidInterface.messageHandlers) != "undefined")
-    || (typeof window != "undefined" && typeof window.chrome != "undefined" && typeof window.chrome.webview != "undefined")) {
+  if (
+    typeof window.flutter_inappwebview != "undefined" ||
+    typeof window.ReactNativeWebView != "undefined" ||
+    typeof window.webkit != "undefined" ||
+    (typeof AndroidInterface != "undefined" &&
+      typeof AndroidInterface.messageHandlers != "undefined") ||
+    (typeof window != "undefined" &&
+      typeof window.chrome != "undefined" &&
+      typeof window.chrome.webview != "undefined")
+  ) {
     return true;
   }
   return false;
-}
+};
