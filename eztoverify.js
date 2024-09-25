@@ -1,4 +1,6 @@
-function eztoverify() { }
+function eztoverify() {}
+
+var newTab = undefined;
 
 function bufferToBase64url(buffer) {
   const byteView = new Uint8Array(buffer);
@@ -19,12 +21,12 @@ function bufferToBase64url(buffer) {
   return base64urlString;
 }
 
-const appendModal = (url, opts, callback) => {
+const appendIframeModal = (url, opts, callback) => {
   let lurl = new URL(opts.api);
   // Create a div element
   let div = document.createElement("div");
 
-  div.setAttribute('id', 'ezto')
+  div.setAttribute("id", "ezto");
 
   // Set the inner HTML of the div to your HTML snippet
   div.innerHTML =
@@ -33,8 +35,8 @@ const appendModal = (url, opts, callback) => {
     <div class="ez-modal-content">
         <span id="ez-close" class="ez-close">&times;</span>
         <div id="frameLoader" class="loaderContainer">
-          <div class="loader">
-
+          <div id="customMessage" style="display:none;"></div>
+          <div class="ez-loader">
           </div>
         </div>
         <iframe id="ez-iframe"  allow="camera 'src'  ` +
@@ -45,22 +47,22 @@ const appendModal = (url, opts, callback) => {
     lurl.origin +
     `" src="` +
     url +
-    `" frameborder="0"></iframe>
+    `" frameborder="0" style="display:none;"></iframe>
     </div>
     </div>`;
 
   // Append the div to the body
-  document.getElementById('ez-overlay').appendChild(div);
+  document.getElementById("ez-overlay").appendChild(div);
   if (isWebview()) {
     document.getElementById("ez-close").style.display = "none";
   }
   let modal = document.getElementById("ez-modal");
-  let ezIframe = document.getElementById('ez-iframe');
+  let ezIframe = document.getElementById("ez-iframe");
   // Get the <span> element that closes the modal
   let span = document.getElementsByClassName("ez-close")[0];
   span.onclick = function () {
     modal.style.display = "none";
-    document.getElementById('ezto').style.display = "none";
+    document.getElementById("ezto").style.display = "none";
     document.getElementById("ez-overlay").style.display = "none";
     ezIframe.src = "";
     callback({
@@ -71,7 +73,7 @@ const appendModal = (url, opts, callback) => {
   };
 };
 
-const showStatus = () => {
+const showStatus = (opts) => {
   if (!document.getElementById("ez-overlay")) {
     // Create a new <div> element
     let newDiv = document.createElement("div");
@@ -91,16 +93,23 @@ const showStatus = () => {
     newDiv.id = "ez-popup";
 
     // Creating loader div
-    const loaderContainer = document.createElement('div');
-    const loader = document.createElement('div');
+    const loaderContainer = document.createElement("div");
+    const loader = document.createElement("div");
 
-    loaderContainer.classList.add('loaderContainer')
-    loader.classList.add('loader');
+    loaderContainer.classList.add("loaderContainer");
+    loader.classList.add("ez-loader");
 
+    const customPromptContainer = document.createElement("div");
+    customPromptContainer.id = "customMessage";
+    customPromptContainer.style.display = "none";
+    customPromptContainer.style.wordBreak = "break-word";
+
+    loaderContainer.appendChild(customPromptContainer);
     loaderContainer.appendChild(loader);
+
     newDiv.appendChild(loaderContainer);
 
-    const overlay = document.getElementById('ez-overlay');
+    const overlay = document.getElementById("ez-overlay");
     // Append the new <div> element to the <body> tag
     overlay.appendChild(newDiv);
   }
@@ -125,23 +134,39 @@ const hideLoader = () => {
   }, 500);
 };
 
+const showLoader = (opts) => {
+  const overlay = document.getElementById("ez-overlay");
+  const popup = document.getElementById("ez-popup");
+  const customMessage = document.getElementById("customMessage");
+  if (customMessage) {
+    customMessage.innerText =
+      opts.promptMessage !== undefined
+        ? ""
+        : "A new tab will opened for verification!. It will close automatically once the process is completed. Please check your popup settings if not opened.";
+    customMessage.style.wordBreak = "break-word";
+    customMessage.style.display = "flex";
+  }
+  if (overlay) overlay.style.display = "flex";
+  if (popup) popup.style.display = "flex";
+};
+
 const showModal = (url, opts, callback) => {
   hideStatus();
   if (!document.getElementById("ez-modal")) {
-    appendModal(url, opts, callback);
+    appendIframeModal(url, opts, callback);
   } else {
+    document.getElementById("ez-iframe").style.display = "none";
     document.getElementById("ez-modal").style.display = "flex";
-    document.getElementById('ezto').style.display = "flex";
+    document.getElementById("ezto").style.display = "flex";
     document.getElementById("ez-iframe").src = url; // Set the URL here
-    document.getElementById('frameLoader').style.display = "flex";
+    document.getElementById("frameLoader").style.display = "flex";
   }
-  const ezIframe = document.getElementById('ez-iframe');
+  const ezIframe = document.getElementById("ez-iframe");
   ezIframe.onload = function () {
-    document.getElementById('frameLoader').style.display = "none";
-    document.getElementById('ez-iframe').style.display = "block";
-    document.getElementById('ez-modal').style.display = "flex";
-  }
-
+    document.getElementById("frameLoader").style.display = "none";
+    document.getElementById("ez-iframe").style.display = "block";
+    document.getElementById("ez-modal").style.display = "flex";
+  };
 };
 
 const registerListener = (url) => {
@@ -160,7 +185,7 @@ const registerListener = (url) => {
         }
       }
     },
-    { once: true }
+    { once: true },
   );
 
   function fido(modal, event) {
@@ -182,10 +207,10 @@ const registerListener = (url) => {
               rawId: bufferToBase64url(result.rawId),
               response: {
                 attestationObject: bufferToBase64url(
-                  result.response.attestationObject
+                  result.response.attestationObject,
                 ),
                 clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON
+                  result.response.clientDataJSON,
                 ),
               },
               type: result.type,
@@ -213,14 +238,12 @@ const registerListener = (url) => {
               rawId: bufferToBase64url(result.rawId),
               response: {
                 authenticatorData: bufferToBase64url(
-                  result.response.authenticatorData
+                  result.response.authenticatorData,
                 ),
                 clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON
+                  result.response.clientDataJSON,
                 ),
-                signature: bufferToBase64url(
-                  result.response.signature
-                )
+                signature: bufferToBase64url(result.response.signature),
               },
               type: result.type,
             };
@@ -242,14 +265,50 @@ const registerListener = (url) => {
   }
 };
 
+/**
+ * Sends a POST request to the specified ezto verify endpoint.
+ *
+ * @param {Object} data - The data to be sent in the request body.
+ * @param {Object} opts - Options for the request.
+ * @param {string} opts.api - The API endpoint URL.
+ * @param {string} [opts.apiVersion="0"] - The version of the API to use (default is "0").
+ * @param {boolean} [opts.debug=false] - If true, logs the response for debugging purposes.
+ * @param {Function} callback - A callback function that handles the response.
+ *
+ * @callback callback
+ * @param {Object} result - The result of the request.
+ * @param {boolean} result.success - Indicates if the request was successful.
+ * @param {string} [result.reason] - The reason for failure, if applicable.
+ *
+ * @example
+ * const userData = { username: "exampleUser", password: "securePassword" };
+ * const options = {
+ *   api: "https://api.example.com/register",
+ *   apiVersion: "1",
+ *   debug: true,
+ * };
+ *
+ * const handleResponse = (result) => {
+ *   if (result.success) {
+ *     console.log("Registration successful!");
+ *   } else {
+ *     console.error(result.reason);
+ *   }
+ * };
+ *
+ * request(userData, options, handleResponse);
+ */
 const request = async (data, opts, callback) => {
-  registerListener(opts.api);
-  let supportedVersions = ['0', '1'];
+  let supportedVersions = ["0", "1"];
   const requestOptions = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Api-Version": opts.apiVersion != undefined && supportedVersions.includes(opts.apiVersion) ? opts.apiVersion : 0
+      "Api-Version":
+        opts.apiVersion != undefined &&
+        supportedVersions.includes(opts.apiVersion)
+          ? opts.apiVersion
+          : 0,
     },
     body: JSON.stringify(data), // Convert the data to JSON format
   };
@@ -269,7 +328,18 @@ const request = async (data, opts, callback) => {
       if (opts.debug) {
         console.log(res);
       }
-      showModal(res.url, opts, callback);
+
+      if (res && res.openInNewTab && res.openInNewTab === "false") {
+        registerListener(opts.api);
+        showModal(res.url, opts, callback);
+      } else {
+        showLoader(opts);
+        setTimeout(() => {
+          opts.openInNewTab = true;
+          newTab = window.open(res.url, "_blank");
+        }, 500);
+      }
+
       listen(res.trxId, res.pollUrl, opts, callback);
     }
   } catch (error) {
@@ -283,15 +353,29 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.connect();
   socket.on(chatcode, function (event) {
     setTimeout(() => {
-      let modal = document.getElementById("ez-modal");
-      let eztoDiv = document.getElementById('ezto');
-      modal.style.display = "none";
-      eztoDiv.style.display = "none";
-      document.getElementById('ez-overlay').style.display = "none";
-      hideStatus();
-      document.getElementById('ez-iframe').src = "";
-      callback(event);
-    }, 1500)
+      if (opts.openInNewTab !== undefined && opts.openInNewTab) {
+        newTab.close();
+        document.getElementById("ez-overlay").style.display = "none";
+        hideStatus();
+        callback(event);
+      } else {
+        let modal = document.getElementById("ez-modal");
+        let eztoDiv = document.getElementById("ezto");
+        let iframe = document.getElementById("ez-iframe");
+        hideStatus();
+        if (iframe) {
+          iframe.src = "";
+        }
+        if (modal) {
+          modal.style.display = "none";
+        }
+        if (eztoDiv) {
+          eztoDiv.style.display = "none";
+        }
+        document.getElementById("ez-overlay").style.display = "none";
+        callback(event);
+      }
+    }, 1500);
   });
   socket.on("connect", function () {
     if (opts.debug) {
@@ -301,21 +385,25 @@ const listen = (chatcode, pollUrl, opts, callback) => {
 };
 
 eztoverify.prototype.request = function (metadata, cnfg, callback) {
-  showStatus();
+  showStatus(cnfg);
   let trxRequest = {
     metadata: metadata,
   };
   request(trxRequest, cnfg, callback);
 };
 
-
 const isWebview = () => {
-  if ((typeof window.flutter_inappwebview) != "undefined"
-    || (typeof window.ReactNativeWebView) != "undefined"
-    || (typeof window.webkit) != "undefined"
-    || (((typeof AndroidInterface) != "undefined") && (typeof AndroidInterface.messageHandlers) != "undefined")
-    || (typeof window != "undefined" && typeof window.chrome != "undefined" && typeof window.chrome.webview != "undefined")) {
+  if (
+    typeof window.flutter_inappwebview != "undefined" ||
+    typeof window.ReactNativeWebView != "undefined" ||
+    typeof window.webkit != "undefined" ||
+    (typeof AndroidInterface != "undefined" &&
+      typeof AndroidInterface.messageHandlers != "undefined") ||
+    (typeof window != "undefined" &&
+      typeof window.chrome != "undefined" &&
+      typeof window.chrome.webview != "undefined")
+  ) {
     return true;
   }
   return false;
-}
+};
