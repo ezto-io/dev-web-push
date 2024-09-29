@@ -179,6 +179,7 @@ const registerListener = (url) => {
         switch (event.data.action) {
           case "fido":
             fido(modal, event);
+            registerListener(url);
             break;
           default:
             break;
