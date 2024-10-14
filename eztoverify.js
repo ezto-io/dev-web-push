@@ -169,7 +169,7 @@ const showModal = (url, opts, callback) => {
   };
 };
 
-const registerListener = (url) => {
+const registerListener = (url, openInNewTab) => {
   let lurl = new URL(url);
   window.addEventListener(
     "message",
@@ -179,7 +179,9 @@ const registerListener = (url) => {
         switch (event.data.action) {
           case "fido":
             fido(modal, event);
-            registerListener(url);
+            if (openInNewTab) {
+              registerListener(url, openInNewTab);
+            }
             break;
           default:
             break;
