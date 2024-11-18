@@ -2,6 +2,8 @@ function eztoverify() {}
 
 var newTab = undefined;
 
+var lurl;
+
 function bufferToBase64url(buffer) {
   const byteView = new Uint8Array(buffer);
   let str = "";
@@ -65,6 +67,7 @@ const appendIframeModal = (url, opts, callback) => {
     document.getElementById("ezto").style.display = "none";
     document.getElementById("ez-overlay").style.display = "none";
     ezIframe.src = "";
+    removeListener();
     callback({
       type: "register",
       success: false,
@@ -169,103 +172,105 @@ const showModal = (url, opts, callback) => {
   };
 };
 
-const registerListener = (url, openInNewTab) => {
-  let lurl = new URL(url);
-  window.addEventListener(
-    "message",
-    function (event) {
-      let modal = document.getElementById("ez-iframe");
-      if (event.origin === lurl.origin) {
-        switch (event.data.action) {
-          case "fido":
-            fido(modal, event);
-            if (openInNewTab) {
-              registerListener(url, openInNewTab);
-            }
-            break;
-          default:
-            break;
-        }
-      }
-    },
-    { once: true },
-  );
-
-  function fido(modal, event) {
-    if (!window.PublicKeyCredential) {
-      let message = {
-        success: false,
-        err: "webauthn-unsupported-browser-text",
-      };
-      modal.contentWindow.postMessage(message, lurl.origin);
-    } else {
-      let pubKey = { publicKey: event.data.publicKey };
-      if (event.data.type === "create") {
-        navigator.credentials
-          .create(pubKey)
-          .then((result) => {
-            const serializeable = {
-              authenticatorAttachment: result.authenticatorAttachment,
-              id: result.id,
-              rawId: bufferToBase64url(result.rawId),
-              response: {
-                attestationObject: bufferToBase64url(
-                  result.response.attestationObject,
-                ),
-                clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON,
-                ),
-              },
-              type: result.type,
-            };
-            let message = {
-              success: true,
-              result: serializeable,
-            };
-            modal.contentWindow.postMessage(message, lurl.origin);
-          })
-          .catch((err) => {
-            let message = {
-              success: false,
-              err: err,
-            };
-            modal.contentWindow.postMessage(message, lurl.origin);
-          });
-      } else {
-        navigator.credentials
-          .get(pubKey)
-          .then((result) => {
-            const serializeable = {
-              authenticatorAttachment: result.authenticatorAttachment,
-              id: result.id,
-              rawId: bufferToBase64url(result.rawId),
-              response: {
-                authenticatorData: bufferToBase64url(
-                  result.response.authenticatorData,
-                ),
-                clientDataJSON: bufferToBase64url(
-                  result.response.clientDataJSON,
-                ),
-                signature: bufferToBase64url(result.response.signature),
-              },
-              type: result.type,
-            };
-            let message = {
-              success: true,
-              result: serializeable,
-            };
-            modal.contentWindow.postMessage(message, lurl.origin);
-          })
-          .catch((err) => {
-            let message = {
-              success: false,
-              err: err,
-            };
-            modal.contentWindow.postMessage(message, lurl.origin);
-          });
-      }
+const handleMessagEvent = (event) => {
+  let modal = document.getElementById("ez-iframe");
+  if (event.origin === lurl.origin) {
+    switch (event.data.action) {
+      case "fido":
+        fido(modal, event, lurl);
+        break;
+      default:
+        break;
     }
   }
+};
+
+function fido(modal, event, lurl) {
+  if (!window.PublicKeyCredential) {
+    let message = {
+      success: false,
+      err: "webauthn-unsupported-browser-text",
+    };
+    modal.contentWindow.postMessage(message, lurl.origin);
+  } else {
+    let pubKey = { publicKey: event.data.publicKey };
+    if (event.data.type === "create") {
+      navigator.credentials
+        .create(pubKey)
+        .then((result) => {
+          const serializeable = {
+            authenticatorAttachment: result.authenticatorAttachment,
+            id: result.id,
+            rawId: bufferToBase64url(result.rawId),
+            response: {
+              attestationObject: bufferToBase64url(
+                result.response.attestationObject,
+              ),
+              clientDataJSON: bufferToBase64url(
+                result.response.clientDataJSON,
+              ),
+            },
+            type: result.type,
+          };
+          let message = {
+            success: true,
+            result: serializeable,
+          };
+          modal.contentWindow.postMessage(message, lurl.origin);
+        })
+        .catch((err) => {
+          let message = {
+            success: false,
+            err: err,
+          };
+          modal.contentWindow.postMessage(message, lurl.origin);
+        });
+    } else {
+      navigator.credentials
+        .get(pubKey)
+        .then((result) => {
+          const serializeable = {
+            authenticatorAttachment: result.authenticatorAttachment,
+            id: result.id,
+            rawId: bufferToBase64url(result.rawId),
+            response: {
+              authenticatorData: bufferToBase64url(
+                result.response.authenticatorData,
+              ),
+              clientDataJSON: bufferToBase64url(
+                result.response.clientDataJSON,
+              ),
+              signature: bufferToBase64url(result.response.signature),
+            },
+            type: result.type,
+          };
+          let message = {
+            success: true,
+            result: serializeable,
+          };
+          modal.contentWindow.postMessage(message, lurl.origin);
+        })
+        .catch((err) => {
+          let message = {
+            success: false,
+            err: err,
+          };
+          modal.contentWindow.postMessage(message, lurl.origin);
+        });
+    }
+  }
+}
+
+const removeListener = () => {
+  window.removeEventListener('message', handleMessagEvent)
+}
+const registerListener = (url) => {
+  lurl = new URL(url);
+
+  window.addEventListener(
+    "message",
+    handleMessagEvent
+    );
 };
 
 /**
@@ -302,6 +307,7 @@ const registerListener = (url, openInNewTab) => {
  * request(userData, options, handleResponse);
  */
 const request = async (data, opts, callback) => {
+  registerListener(opts.api);
   let supportedVersions = ["0", "1"];
   const requestOptions = {
     method: "POST",
@@ -333,7 +339,6 @@ const request = async (data, opts, callback) => {
       }
 
       if (res && res.openInNewTab && res.openInNewTab === "false") {
-        registerListener(opts.api);
         showModal(res.url, opts, callback);
       } else {
         showLoader(opts);
@@ -346,6 +351,7 @@ const request = async (data, opts, callback) => {
       listen(res.trxId, res.pollUrl, opts, callback);
     }
   } catch (error) {
+    removeListener();
     callback({ type: "register", success: false, reason: `Error: ${error}` });
   }
 };
@@ -355,6 +361,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
   socket.auth = { chatcode };
   socket.connect();
   socket.on(chatcode, function (event) {
+    removeListener();
     setTimeout(() => {
       if (opts.openInNewTab !== undefined && opts.openInNewTab) {
         newTab.close();
