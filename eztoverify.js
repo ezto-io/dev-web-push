@@ -2,7 +2,7 @@ let _isLoadedInMobileWebview = false;
 
 (() => {
   const script = document.createElement("script");
-  script.src = "./ezto.js";
+  script.src = "ezto.js";
 
   script.onload = function () {
     console.log("ezto.js loaded successfully.");
