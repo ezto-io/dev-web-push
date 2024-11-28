@@ -1,3 +1,25 @@
+let _isLoadedInMobileWebview = false;
+
+(() => {
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/gh/ezto-io/dev-web-push@latest/ezto.min.js";
+
+  script.onload = function () {
+    console.log("ezto.js loaded successfully.");
+    var platform = getPlatform();
+    if (platform !== 'other') {
+      _isLoadedInMobileWebview = true;
+      console.log("_isLoadedInMobileWebview", _isLoadedInMobileWebview)
+    }
+  };  
+
+  script.onerror = function () {
+    console.error("Error: ezto.js is not available");
+  };
+
+  document.head.appendChild(script);
+})();
+
 function eztoverify() {}
 
 var newTab = undefined;
@@ -77,55 +99,66 @@ const appendIframeModal = (url, opts, callback) => {
 };
 
 const showStatus = (opts) => {
-  if (!document.getElementById("ez-overlay")) {
-    // Create a new <div> element
-    let newDiv = document.createElement("div");
-
-    // Set some attributes for the div (optional)
-    newDiv.id = "ez-overlay";
-
-    // Append the new <div> element to the <body> tag
-    document.body.appendChild(newDiv);
-  }
-
-  if (!document.getElementById("ez-popup")) {
-    // Create a new <div> element
-    let newDiv = document.createElement("div");
-
-    // Set some attributes for the div (optional)
-    newDiv.id = "ez-popup";
-
-    // Creating loader div
-    const loaderContainer = document.createElement("div");
-    const loader = document.createElement("div");
-
-    loaderContainer.classList.add("loaderContainer");
-    loader.classList.add("ez-loader");
-
-    const customPromptContainer = document.createElement("div");
-    customPromptContainer.id = "customMessage";
-    customPromptContainer.style.display = "none";
-    customPromptContainer.style.wordBreak = "break-word";
-
-    loaderContainer.appendChild(customPromptContainer);
-    loaderContainer.appendChild(loader);
-
-    newDiv.appendChild(loaderContainer);
-
+  if(!_isLoadedInMobileWebview) {
+    if (!document.getElementById("ez-overlay")) {
+      let newDiv = document.createElement("div");
+      newDiv.id = "ez-overlay";
+      document.body.appendChild(newDiv);
+    }
+  
+    if (!document.getElementById("ez-popup")) {
+      let newDiv = document.createElement("div");
+      newDiv.id = "ez-popup";
+      const loaderContainer = document.createElement("div");
+      const loader = document.createElement("div");
+      loaderContainer.classList.add("loaderContainer");
+      loader.classList.add("ez-loader");
+      const customPromptContainer = document.createElement("div");
+      customPromptContainer.id = "customMessage";
+      customPromptContainer.style.display = "none";
+      customPromptContainer.style.wordBreak = "break-word";
+      loaderContainer.appendChild(customPromptContainer);
+      loaderContainer.appendChild(loader);
+      newDiv.appendChild(loaderContainer);
+      const overlay = document.getElementById("ez-overlay");
+      overlay.appendChild(newDiv);
+    }
+  
     const overlay = document.getElementById("ez-overlay");
-    // Append the new <div> element to the <body> tag
-    overlay.appendChild(newDiv);
-  }
+    const popup = document.getElementById("ez-popup");
+    overlay.style.display = "flex";
+    popup.style.display = "block";
+  } else {
+    if (!document.getElementById("ez-overlay")) {
+      let newDiv = document.createElement("div");
+      newDiv.id = "ez-overlay";
+      document.body.appendChild(newDiv);
 
-  const overlay = document.getElementById("ez-overlay");
-  const popup = document.getElementById("ez-popup");
-  overlay.style.display = "flex";
-  popup.style.display = "block";
+      let loaderContainer = document.createElement("div");
+      loaderContainer.id = "loader-container";
+      loaderContainer.classList.add("loaderContainer");
+      let loader = document.createElement("div");
+      loader.id = "ezto-loader";
+      loader.classList.add("ez-loader");
+      loaderContainer.appendChild(loader);
+      
+      document.getElementById("ez-overlay")
+      .appendChild(loaderContainer);
+    }
+    document.getElementById("ez-overlay")
+    .style.display = "flex";
+  }
 };
 
 const hideStatus = () => {
   const popup = document.getElementById("ez-popup");
-  popup.style.display = "none";
+  if (popup) {
+    popup.style.display = "none";
+  }
+  const eztoLoader = document.getElementById("ezto-loader");
+  if(eztoLoader) {
+    eztoLoader.style.display = "none";
+  }
 };
 
 const hideLoader = () => {
@@ -204,11 +237,9 @@ function fido(modal, event, lurl) {
             rawId: bufferToBase64url(result.rawId),
             response: {
               attestationObject: bufferToBase64url(
-                result.response.attestationObject,
+                result.response.attestationObject
               ),
-              clientDataJSON: bufferToBase64url(
-                result.response.clientDataJSON,
-              ),
+              clientDataJSON: bufferToBase64url(result.response.clientDataJSON),
             },
             type: result.type,
           };
@@ -219,6 +250,7 @@ function fido(modal, event, lurl) {
           modal.contentWindow.postMessage(message, lurl.origin);
         })
         .catch((err) => {
+          console.error(err)
           let message = {
             success: false,
             err: err,
@@ -235,11 +267,9 @@ function fido(modal, event, lurl) {
             rawId: bufferToBase64url(result.rawId),
             response: {
               authenticatorData: bufferToBase64url(
-                result.response.authenticatorData,
+                result.response.authenticatorData
               ),
-              clientDataJSON: bufferToBase64url(
-                result.response.clientDataJSON,
-              ),
+              clientDataJSON: bufferToBase64url(result.response.clientDataJSON),
               signature: bufferToBase64url(result.response.signature),
             },
             type: result.type,
@@ -251,6 +281,7 @@ function fido(modal, event, lurl) {
           modal.contentWindow.postMessage(message, lurl.origin);
         })
         .catch((err) => {
+          console.error(err)
           let message = {
             success: false,
             err: err,
@@ -262,15 +293,12 @@ function fido(modal, event, lurl) {
 }
 
 const removeListener = () => {
-  window.removeEventListener('message', handleMessagEvent)
-}
+  window.removeEventListener("message", handleMessagEvent);
+};
+
 const registerListener = (url) => {
   lurl = new URL(url);
-
-  window.addEventListener(
-    "message",
-    handleMessagEvent
-    );
+  window.addEventListener("message", handleMessagEvent);
 };
 
 /**
@@ -335,22 +363,31 @@ const request = async (data, opts, callback) => {
     } else {
       let res = await response.json();
       if (opts.debug) {
-        console.log(res);
+        console.log("Response", res);
       }
 
       if (res && res.openInNewTab && res.openInNewTab === "false") {
         showModal(res.url, opts, callback);
       } else {
-        showLoader(opts);
-        setTimeout(() => {
-          opts.openInNewTab = true;
-          newTab = window.open(res.url, "_blank");
-        }, 500);
+        if (_isLoadedInMobileWebview) {
+          openLinkInTab(res.url)
+          .then(() => {
+            opts.openInNewTab = true;
+          })
+          .catch(err => console.log("err", JSON.stringify(err)));
+        } else {
+          showLoader(opts);
+          setTimeout(() => {
+            opts.openInNewTab = true;
+            newTab = window.open(res.url, "_blank");
+          }, 500);
+        }
       }
 
       listen(res.trxId, res.pollUrl, opts, callback);
     }
   } catch (error) {
+    console.error(error.message)
     removeListener();
     callback({ type: "register", success: false, reason: `Error: ${error}` });
   }
@@ -364,7 +401,13 @@ const listen = (chatcode, pollUrl, opts, callback) => {
     removeListener();
     setTimeout(() => {
       if (opts.openInNewTab !== undefined && opts.openInNewTab) {
-        newTab.close();
+        if (_isLoadedInMobileWebview) {
+          closeOpenedTab()
+          .then(response => JSON.stringify(response))
+          .catch(err => JSON.stringify(err));
+        } else {
+          newTab.close();
+        }
         document.getElementById("ez-overlay").style.display = "none";
         hideStatus();
         callback(event);
