@@ -154,7 +154,6 @@ const showLoader = (opts) => {
 };
 
 const showModal = (url, opts, callback) => {
-  hideStatus();
   if (!document.getElementById("ez-modal")) {
     appendIframeModal(url, opts, callback);
   } else {
@@ -169,6 +168,7 @@ const showModal = (url, opts, callback) => {
     document.getElementById("frameLoader").style.display = "none";
     document.getElementById("ez-iframe").style.display = "block";
     document.getElementById("ez-modal").style.display = "flex";
+    hideStatus();
   };
 };
 
@@ -204,11 +204,9 @@ function fido(modal, event, lurl) {
             rawId: bufferToBase64url(result.rawId),
             response: {
               attestationObject: bufferToBase64url(
-                result.response.attestationObject,
+                result.response.attestationObject
               ),
-              clientDataJSON: bufferToBase64url(
-                result.response.clientDataJSON,
-              ),
+              clientDataJSON: bufferToBase64url(result.response.clientDataJSON),
             },
             type: result.type,
           };
@@ -235,11 +233,9 @@ function fido(modal, event, lurl) {
             rawId: bufferToBase64url(result.rawId),
             response: {
               authenticatorData: bufferToBase64url(
-                result.response.authenticatorData,
+                result.response.authenticatorData
               ),
-              clientDataJSON: bufferToBase64url(
-                result.response.clientDataJSON,
-              ),
+              clientDataJSON: bufferToBase64url(result.response.clientDataJSON),
               signature: bufferToBase64url(result.response.signature),
             },
             type: result.type,
@@ -262,15 +258,12 @@ function fido(modal, event, lurl) {
 }
 
 const removeListener = () => {
-  window.removeEventListener('message', handleMessagEvent)
-}
+  window.removeEventListener("message", handleMessagEvent);
+};
 const registerListener = (url) => {
   lurl = new URL(url);
 
-  window.addEventListener(
-    "message",
-    handleMessagEvent
-    );
+  window.addEventListener("message", handleMessagEvent);
 };
 
 /**
@@ -385,7 +378,7 @@ const listen = (chatcode, pollUrl, opts, callback) => {
         document.getElementById("ez-overlay").style.display = "none";
         callback(event);
       }
-    }, 1500);
+    }, 3500);
   });
   socket.on("connect", function () {
     if (opts.debug) {
