@@ -179,11 +179,25 @@ const handleMessagEvent = (event) => {
       case "fido":
         fido(modal, event, lurl);
         break;
+      case "getParentOrigin":  
+         getOrigin(modal, event, lurl);
+        break;
       default:
         break;
     }
   }
 };
+
+function getOrigin(modal, event, lurl) {
+    if (event.data.type === "requestOrigin") {
+      let message = {
+        type: "getOrigin",
+        parentOrigin: window.location.origin,
+        success : true
+      }
+      modal.contentWindow.postMessage(message, lurl.origin);
+    }
+}
 
 function fido(modal, event, lurl) {
   if (!window.PublicKeyCredential) {
